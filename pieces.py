@@ -1,4 +1,4 @@
-# import tkinter as tk
+## import tkinter as tk
 #######################  Drawing    ##########################
 def drawStraightPiece(canvas, X, Y):
     ########  Straigth piece    ########### 40 5

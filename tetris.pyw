@@ -5,7 +5,7 @@ from pieces import *
 from logic import *
 import time
 
-
+#
 # window = tk.Tk()
 board = tk.Frame(width = 400, height = 800,master = window, relief = tk.GROOVE, borderwidth = 5)
 # info = tk.Frame(width = 150, height = 800, master = window)

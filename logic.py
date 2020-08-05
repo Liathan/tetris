@@ -30,7 +30,7 @@ def drawRandPiece(canvas):
 def cleanCanvas(canvas):
     for id in canvas.find_all():
         canvas.delete(id)
-
+#
 def gameOver(canvas, nextCanvas):
     print("Lost")
     global afterID
