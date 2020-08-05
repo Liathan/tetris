@@ -4,11 +4,12 @@ import tkinter as tk
 
 window = tk.Tk()
 info = tk.Frame(width = 150, height = 800, master = window)
-pointNumLbl = tk.Label(text = "0", master = info)
-linesNumLbl = tk.Label(text = "0", master = info)
-levelNumLbl = tk.Label(text= "0", master = info)
+pointNumLbl = tk.Label(text = "0", master = info, font = ("Helvetica", 15))
+linesNumLbl = tk.Label(text = "0", master = info, font = ("Helvetica", 15))
+levelNumLbl = tk.Label(text= "0", master = info, font = ("Helvetica", 15))
 
 
+afterID = 0
 mat = [[0 for i in range(0,400,25)] for j in range(0,600,25)]
 cases = {0:drawStraightPiece, 1:drawSquarePiece, 2: drawTPiece, 3: drawSPiece, 4: drawZPiece, 5: drawJPiece, 6: drawLPiece}
 places = {0: (40, 5), 1: (30, 30), 2: (20, 50), 3: (20, 50), 4: (20, 30), 5: (20, 30), 6: (20, 30)}
@@ -32,6 +33,8 @@ def cleanCanvas(canvas):
 
 def gameOver(canvas, nextCanvas):
     print("Lost")
+    global afterID
+    window.after_cancel(afterID)
     canvas.delete(tk.ALL)
     canvas.unbind("<Up>")
     canvas.unbind("<Left>")
@@ -45,6 +48,8 @@ def gameOver(canvas, nextCanvas):
     canvas.create_text(200, 200, text = "GAME OVER", font = ("Impact", 60), fill = "white")
     canvas.create_text(200, 300, text = "New Game?", font = ("Impact", 45), fill = "white")
     canvas.create_text(200, 400, text = "Press Any Key", font = ("Impact", 45), fill = "gold")
+
+
     canvas.bind("<Key>",lambda event : newGame(canvas, nextCanvas))
 
 def newGame(mainCanvas, nextCanvas):
@@ -56,7 +61,7 @@ def newGame(mainCanvas, nextCanvas):
     mainCanvas.bind("<Down>", moveDown)
     mainCanvas.bind("<space>", lambda event: fall(event, nextCanvas))
 
-    global linesCleared, points, level, TICKPERSECOND,mat
+    global linesCleared, points, level, TICKPERSECOND,mat, afterID
     mat = [[0 for i in range(0,400,25)] for j in range(0,600,25)]
     linesCleared = 0
     points = 0
@@ -70,7 +75,7 @@ def newGame(mainCanvas, nextCanvas):
     cleanCanvas(nextCanvas)
     drawRandPiece(nextCanvas)
     cases[actual](mainCanvas, 175, 25)
-    window.after(1000,tick, mainCanvas, nextCanvas, window)
+    afterID = window.after(1000,tick, mainCanvas, nextCanvas, window)
 
 def checkRow(row):
     for j in range(400 // 25):
@@ -125,11 +130,11 @@ def stopPiece(canvas, nextCanvas):
         return True
     return False
 
-# BUG: Quando faccio game over e reinizio subito fa due tick anzichè uno WTF
-
+# BUG: Quando faccio game over e il gameOver è stato chiamato da fall e reinizio subito fa due tick anzichè uno WTF
+# Questo perchè lo scheduling del prossimo tick viene fatto in tick, e quindi esiste ancora se faccio in fall
 
 def tick(canvas, nextCanvas, window):
-    global mat
+    global mat, afterID
     print("tick")
     lost  = False
     canvas.move("falling",0,25)
@@ -137,7 +142,7 @@ def tick(canvas, nextCanvas, window):
         canvas.move("falling",0,-25)
         lost = stopPiece(canvas, nextCanvas)
     if not lost:
-        window.after(1000 // TICKPERSECOND, tick, canvas, nextCanvas, window)
+        afterID = window.after(1000 // TICKPERSECOND, tick, canvas, nextCanvas, window)
     else:
         gameOver(canvas, nextCanvas)
 
