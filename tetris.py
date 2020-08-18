@@ -13,7 +13,6 @@ info.pack(side= tk.LEFT, fill = tk.Y)
 info.columnconfigure(0,minsize = 150)
 
 nextLbl = tk.Label(text = "Next", master = info)
-nextCanvas = tk.Canvas(master = info, width = 110, height = 110, bg = "Black")
 separator1 = ttk.Separator(info, orient= 'horizontal')
 separator2 = ttk.Separator(info, orient= 'horizontal')
 separator3 = ttk.Separator(info, orient= 'horizontal')

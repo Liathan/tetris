@@ -6,6 +6,7 @@ window = tk.Tk()
 window.geometry("+100+110") # Forse da rendere dinamico sulla dimensione dello schermo
 board = tk.Frame(width = 400, height = 800,master = window, relief = tk.GROOVE, borderwidth = 5)
 info = tk.Frame(width = 150, height = 800, master = window)
+nextCanvas = tk.Canvas(master = info, width = 110, height = 110, bg = "Black")
 pointNumLbl = tk.Label(text = "0", master = info, font = ("Helvetica", 15))
 linesNumLbl = tk.Label(text = "0", master = info, font = ("Helvetica", 15))
 levelNumLbl = tk.Label(text= "0", master = info, font = ("Helvetica", 15))
@@ -43,6 +44,30 @@ def insertRecord(window, name, nameScores, index):
     recFile.flush()
     recFile.close()
     window.destroy()
+
+def pause(canvas):
+    window.after_cancel(afterID)
+    canvas.unbind("<Up>")
+    canvas.unbind("<Left>")
+    canvas.unbind("<Right>")
+    canvas.unbind("<Down>")
+    canvas.unbind("<space>")
+    canvas.bind("<p>", lambda event: unpause(event.widget))
+    color = {0: "#003333", 1: "#333300", 2: "#300030", 3: "#003000", 4: "#330000", 5: "#331100", 6: "#000033"}
+    for i in range(0, 400, 25):
+        for j in range(0, 600, 25):
+            canvas.create_rectangle(i, j, i+25, j+25, fill = color[rnd.randint(0,6)], tags = "pause")
+    canvas.create_text(200, 300, text = "Paused", font = ("Impact",50), fill = "white", tags = "pause")
+
+def unpause(canvas):
+    tick(canvas, nextCanvas, window) #???
+    canvas.delete("pause")
+    canvas.bind("<Up>", rotate)
+    canvas.bind("<Left>", moveLeft)
+    canvas.bind("<Right>", moveRight)
+    canvas.bind("<Down>", moveDown)
+    canvas.bind("<space>", lambda event: fall(event, nextCanvas))
+    canvas.bind("<p>", lambda event: pause(event.widget))
 
 def recordPopUp():
     recFile = open("record.txt","r")
@@ -99,6 +124,7 @@ def gameOver(canvas, nextCanvas):
     canvas.unbind("<Right>")
     canvas.unbind("<Down>")
     canvas.unbind("<space>")
+    canvas.unbin("<p>")
     color = {0: "#003333", 1: "#333300", 2: "#300030", 3: "#003000", 4: "#330000", 5: "#331100", 6: "#000033"}
     for i in range(0, 400, 25):
         for j in range(0, 600, 25):
@@ -118,7 +144,7 @@ def newGame(mainCanvas, nextCanvas):
     mainCanvas.bind("<Right>", moveRight)
     mainCanvas.bind("<Down>", moveDown)
     mainCanvas.bind("<space>", lambda event: fall(event, nextCanvas))
-
+    mainCanvas.bind("<p>", lambda event: pause(event.widget))
     global linesCleared, points, level, TICKPERSECOND,mat, afterID
     mat = [[0 for i in range(0,400,25)] for j in range(0,600,25)]
     linesCleared = 0
@@ -173,7 +199,8 @@ def stopPiece(canvas, nextCanvas):
         canvas.dtag(id,"falling")
         coord = canvas.coords(id)
         row = int(coord[1]) // 25
-        mat[row][int(coord[0]) // 25] = 1
+        color = {"cyan": 1, "yellow": 2, "purple": 3, "green": 4, "red": 5, "orange": 6, "blue": 7}
+        mat[row][int(coord[0]) // 25] = color[canvas.itemcget(id, "fill")]
         canvas.addtag("row"+str(row),"withtag",id)
         if checkRow(row):
             rowsToRemove.add(row)
@@ -209,7 +236,7 @@ def checkHitOtherPiece(canvas):
         #se la cella in cui è è occupata return True
         #coord[0] sono le x, quindi le colonne
         #coord[1] sono le y, quindi le righe
-        if mat[int(coord[1]) // 25][int(coord[0]) // 25] == 1:
+        if mat[int(coord[1]) // 25][int(coord[0]) // 25] != 0:
             return True
     return False
 
