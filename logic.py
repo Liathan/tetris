@@ -44,6 +44,7 @@ def insertRecord(window, name, nameScores, index):
     recFile.flush()
     recFile.close()
     window.destroy()
+    printRecords()
 
 def pause(canvas):
     window.after_cancel(afterID)
@@ -77,9 +78,9 @@ def recordPopUp():
     i = 0
     while i < len(scores) and points <= scores[i]:
         i += 1
-    record = tk.Toplevel(width = 300, height = 400)
-    record.grab_set()
     if i < 10:
+        record = tk.Toplevel(width = 300, height = 400)
+        record.grab_set()
         recFile.close()
         tmpLabel = tk.Label(text = "New Record", master = record)
         nameEntry = tk.Entry(master = record, width = 50)
@@ -90,25 +91,37 @@ def recordPopUp():
         enterButton.pack(pady = 5)
         nameEntry.bind("<Return>", lambda event: insertRecord(record, nameEntry.get() if nameEntry.get().strip() != "" else "unknown", nameScores, i))
         enterButton.bind("<1>", lambda event: insertRecord(record, nameEntry.get() if nameEntry.get().strip() != "" else "unknown", nameScores, i))
+        positionX = board.winfo_rootx() + board.winfo_reqwidth() // 2 - record.winfo_reqwidth() // 2
+        positionY = board.winfo_rooty() + board.winfo_reqheight() // 2 - record.winfo_reqheight() // 2
+        record.geometry("+{}+{}".format(positionX,positionY))
     else:
         recFile.close()
-        tmpLabel = tk.Label(text = "Not Enough", master = record)
-        tableFrame = tk.Frame(master = record)
-        tableFrame.columnconfigure([0,1,2],minsize = 50)
-        namesLbls = [tk.Label(master = tableFrame, text = names[i]) for i in range(len(names))]
-        scoreLbls = [tk.Label(master = tableFrame, text = scores[i]) for i in range(len(scores))]
-        tmpLabel.pack()
-        for i in range(len(names)):
-            tmp = tk.Label(master = tableFrame, text = str(i + 1))
-            tmp.grid(row = i, column = 0)
-            namesLbls[i].grid(row = i, column = 1)
-            scoreLbls[i].grid(row = i, column = 2)
-        tableFrame.pack()
-        enterButton = tk.Button(master = record, text = "OK")#, command = record.destroy)
-        enterButton.bind("<Return>", lambda _ : record.destroy())
-        enterButton.bind("<1>", lambda _ : record.destroy())
-        enterButton.focus_set()
-        enterButton.pack()
+        printRecords()
+
+def printRecords():
+    recFile = open("record.txt","r")
+    nameScores = [line for line in recFile]
+    names = [nameScore.split(" ")[0] for nameScore in nameScores]
+    scores = [int(nameScore.split(" ")[1]) for nameScore in nameScores]
+    record = tk.Toplevel(width = 300, height = 400)
+    record.grab_set()
+    tmpLabel = tk.Label(text = "Records", master = record)
+    tableFrame = tk.Frame(master = record)
+    tableFrame.columnconfigure([0,1,2],minsize = 50)
+    namesLbls = [tk.Label(master = tableFrame, text = names[i]) for i in range(len(names))]
+    scoreLbls = [tk.Label(master = tableFrame, text = scores[i]) for i in range(len(scores))]
+    tmpLabel.pack()
+    for i in range(len(names)):
+        tmp = tk.Label(master = tableFrame, text = str(i + 1))
+        tmp.grid(row = i, column = 0)
+        namesLbls[i].grid(row = i, column = 1)
+        scoreLbls[i].grid(row = i, column = 2)
+    tableFrame.pack()
+    enterButton = tk.Button(master = record, text = "OK")#, command = record.destroy)
+    enterButton.bind("<Return>", lambda _ : record.destroy())
+    enterButton.bind("<1>", lambda _ : record.destroy())
+    enterButton.focus_set()
+    enterButton.pack()
     positionX = board.winfo_rootx() + board.winfo_reqwidth() // 2 - record.winfo_reqwidth() // 2
     positionY = board.winfo_rooty() + board.winfo_reqheight() // 2 - record.winfo_reqheight() // 2
     record.geometry("+{}+{}".format(positionX,positionY))
@@ -124,7 +137,7 @@ def gameOver(canvas, nextCanvas):
     canvas.unbind("<Right>")
     canvas.unbind("<Down>")
     canvas.unbind("<space>")
-    canvas.unbin("<p>")
+    canvas.unbind("<p>")
     color = {0: "#003333", 1: "#333300", 2: "#300030", 3: "#003000", 4: "#330000", 5: "#331100", 6: "#000033"}
     for i in range(0, 400, 25):
         for j in range(0, 600, 25):
